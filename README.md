@@ -12,7 +12,6 @@ ROS 2 workspace that runs a quadrotor in **Gazebo Sim (gz-sim)**, bridges select
 - [Run the simulator](#run-the-simulator)
 - [Train (PPO)](#train-ppo)
 - [Optional: smoke test](#optional-smoke-test)
-- [Optional: goal_controller package](#optional-goal_controller-package)
 - [ROS ↔ Gazebo interface](#ros--gazebo-interface)
 - [Architecture](#architecture)
 - [Configuration and debugging](#configuration-and-debugging)
@@ -50,9 +49,7 @@ Workspace root (typical ROS 2 + colcon layout):
 | `log/` | colcon and ROS log output (generated; ignored by git). |
 | `scripts/` | Helper scripts (e.g. env smoke test). |
 
-### Packages under `src/`
-
-#### `quadrotor_sim` (main)
+### Package: `quadrotor_sim`
 
 | Path | Role |
 |------|------|
@@ -63,10 +60,6 @@ Workspace root (typical ROS 2 + colcon layout):
 | `models/quadrotor/` | SDF (and optional xacro) for the quadrotor and plugins. |
 | `quadrotor_sim/envs/quadrotor_hover_env.py` | Gymnasium environment (ROS publishers/subscribers + reward/reset logic). |
 | `quadrotor_sim/train/train_hover.py` | End-to-end training: cleans up old gz processes, launches sim + bridge + spawn, then PPO. |
-
-#### `goal_controller` (optional / separate demo)
-
-Python **ament** package with a small `controller_node` example (`/cmd_vel`, `/odom`). It is **not** a dependency of `quadrotor_sim`; build it only if you use it.
 
 ---
 
@@ -100,7 +93,7 @@ From the workspace root (`~/ros2_ws` or your clone):
 ```bash
 cd ~/ros2_ws
 source /opt/ros/jazzy/setup.bash
-colcon build --symlink-install
+colcon build --packages-select quadrotor_sim --symlink-install
 source install/setup.bash
 ros2 launch quadrotor_sim quadrotor.launch.py
 ```
@@ -111,18 +104,9 @@ For training, also activate the Python environment that has SB3/Gymnasium, then 
 
 ## Build
 
-**Full workspace** (both packages):
-
 ```bash
 source /opt/ros/jazzy/setup.bash
 cd ~/ros2_ws
-colcon build --symlink-install
-source install/setup.bash
-```
-
-**Only the sim package** (faster while iterating):
-
-```bash
 colcon build --packages-select quadrotor_sim --symlink-install
 source install/setup.bash
 ```
@@ -212,18 +196,6 @@ python3 scripts/check_env_smoke.py
 
 ---
 
-## Optional: `goal_controller` package
-
-Build and run the example node (separate topic names from the quadrotor stack):
-
-```bash
-colcon build --packages-select goal_controller --symlink-install
-source install/setup.bash
-ros2 run goal_controller controller_node
-```
-
----
-
 ## ROS ↔ Gazebo interface
 
 Bridged topic pairs (ROS name → gz type) match `launch/quadrotor.launch.py` and the subprocess bridge in `train_hover.py`:
@@ -299,10 +271,9 @@ colcon build --symlink-install && source install/setup.bash
 
 - `package.xml` still has placeholder maintainer/license text.
 - Reset path in the env favors **teleport + pause** (`set_pose` / `WorldControl`) rather than full delete+respawn for speed and stability; see `quadrotor_hover_env.py` for details.
-- `goal_controller` is a standalone tutorial-style node, not wired into the RL stack.
 
 ---
 
 ## License
 
-See `package.xml` in each package; replace `TODO` with your chosen license before publishing.
+See `src/quadrotor_sim/package.xml`; replace `TODO` with your chosen license before publishing.
