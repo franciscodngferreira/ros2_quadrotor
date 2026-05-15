@@ -18,17 +18,20 @@ class QuadrotorHoverEnv(gym.Env):
 
     metadata = {"render_modes": []}
 
-    def __init__(self):
+    def __init__(self, max_steps: int = 500):
         super().__init__()
 
         self.target_z = 1.0
-        self.max_steps = 500
+        self.max_steps = max_steps
         self.current_step = 0
         self.min_z = 0.05
         self.max_z = 3.0
         self.max_xy = 3.0
 
-        print(f"[env] bounds: min_z={self.min_z} max_z={self.max_z} max_xy={self.max_xy}")
+        print(
+            f"[env] max_steps={self.max_steps} "
+            f"bounds: min_z={self.min_z} max_z={self.max_z} max_xy={self.max_xy}"
+        )
 
         self._first_reset = True
 

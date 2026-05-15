@@ -136,7 +136,7 @@ def main():
 
         # 5. Train
         print("[train] Starting training...")
-        model.learn(total_timesteps=500_000)
+        model.learn(total_timesteps=100_000)
 
         # 6. Save
         model.save("quadrotor_hover_ppo")
