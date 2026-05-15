@@ -23,6 +23,7 @@ dist/
 
 # Training / experiment outputs (regenerate or store elsewhere)
 hover_tensorboard/
+checkpoints/
 quadrotor_hover_ppo.zip
 
 # Editors

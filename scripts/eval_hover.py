@@ -29,7 +29,7 @@ def main():
     parser.add_argument(
         '--model',
         default='quadrotor_hover_ppo',
-        help='SB3 model path (with or without .zip extension)',
+        help='SB3 model path (default: quadrotor_hover_ppo.zip from training)',
     )
     parser.add_argument('--episodes', type=int, default=5)
     parser.add_argument(
@@ -57,7 +57,8 @@ def main():
         model_path = model_path + '.zip'
     if not os.path.isfile(model_path):
         print(f"[eval] Model not found: {model_path}")
-        print("[eval] Train first or pass --model /path/to/policy")
+        print("[eval] Train first, then use: --model checkpoints/best_eval")
+        print("[eval] Or list runs: python3 scripts/list_checkpoints.py")
         sys.exit(1)
 
     print(f"[eval] Loading {model_path} ...")

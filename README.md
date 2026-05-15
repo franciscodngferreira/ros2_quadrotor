@@ -46,13 +46,15 @@ cd ~/ros2_ws
 python3 scripts/eval_hover.py --episodes 3
 ```
 
+Default model: `quadrotor_hover_ppo.zip`. With checkpoints enabled: `--model checkpoints/best_eval`.
+
 Longer recording: `python3 scripts/eval_hover.py --max-steps 2000 --episodes 1`
 
 Do **not** run `train_hover.py` while the launch above is running (duplicate Gazebo/bridge).
 
 ## Train
 
-Starts its own headless Gazebo, bridge, and spawn:
+Edit settings at the top of `src/quadrotor_sim/quadrotor_sim/train/train_hover.py` (`TOTAL_TIMESTEPS`, `USE_CHECKPOINTS`, …), then:
 
 ```bash
 source ~/rl_venv/bin/activate
@@ -61,7 +63,9 @@ cd ~/ros2_ws
 python3 src/quadrotor_sim/quadrotor_sim/train/train_hover.py
 ```
 
-Writes `quadrotor_hover_ppo.zip` and `hover_tensorboard/` (gitignored). TensorBoard: `tensorboard --logdir hover_tensorboard`.
+Default: `USE_CHECKPOINTS = False` → only `quadrotor_hover_ppo.zip` at the end. Set `USE_CHECKPOINTS = True` for `checkpoints/best_eval.zip` and periodic saves.
+
+TensorBoard: `tensorboard --logdir hover_tensorboard`.
 
 ## Headless sim only
 
