@@ -6,7 +6,7 @@ PPO-trained randomized goal-reaching for a quadrotor in **Gazebo Sim**, wired th
 
 Three fixed legs from `scripts/record_demo.py`, 2x speed: the drone (pink) flies from a corner of the arena to a randomly-placed target (red dot) and holds station on it. Trained policy, deterministic actions, no scripted trajectory.
 
-Full clip: [v0.1.0 release](https://github.com/franciscodngferreira/ros2_quadrotor/releases/tag/v0.1.0) (fixed-point hover, pre-randomization).
+Full clip (real time, 25 fps): [v0.2.0 release](https://github.com/franciscodngferreira/ros2_quadrotor/releases/tag/v0.2.0). Earlier fixed-point hover, pre-randomization: [v0.1.0 release](https://github.com/franciscodngferreira/ros2_quadrotor/releases/tag/v0.1.0).
 
 ## Stack
 
