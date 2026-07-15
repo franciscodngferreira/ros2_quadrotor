@@ -17,16 +17,12 @@ jobs:
         with:
           python-version: '3.12'
           cache: pip
-          # Required: setup-python's default cache glob is **/requirements.txt,
-          # which does not match requirements-dev.txt, and it errors out rather
-          # than skipping the cache.
+          # Required: the default glob is **/requirements.txt, and a miss errors
+          # the job rather than skipping the cache.
           cache-dependency-path: requirements-dev.txt
 
-      # No ROS and no Gazebo on purpose. These checks are pure math on a bare
-      # env (built via __new__, so __init__ never runs); tests/conftest.py stubs
-      # the ROS modules quadrotor_hover_env imports at module scope but never
-      # calls on these paths. Installing ROS Jazzy here would cost minutes per
-      # run and exercise nothing extra.
+      # No ROS/Gazebo on purpose — the checks are pure math and conftest stubs
+      # the imports. Installing ROS Jazzy would cost minutes and test nothing extra.
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
 
@@ -43,10 +39,8 @@ jobs:
         with:
           python-version: '3.12'
 
-      # Catches syntax errors in the ROS/Gazebo-dependent code the smoke job
-      # cannot import — train_hover.py, callbacks.py, eval_hover.py, and the
-      # rest only fail at runtime on a machine with a live sim, which is a slow
-      # way to find a typo.
+      # The ROS-dependent sources the smoke job can't import otherwise only fail
+      # at runtime on a live sim — a slow way to find a typo.
       - name: Byte-compile all sources
         run: |
           python -m compileall -q \

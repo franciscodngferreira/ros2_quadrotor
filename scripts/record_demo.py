@@ -50,10 +50,9 @@ DEMO_LEGS = [
 ]
 
 
-# Red sphere marking the leg's target. Spawned at runtime rather than added to
-# empty.sdf, since eval_hover.py shares that world and would inherit a stray
-# marker parked at whatever the last demo leg happened to be. No <collision>:
-# the drone flies through it, so it cannot perturb the episode it illustrates.
+# Spawned at runtime, not in empty.sdf: eval_hover.py shares that world and would
+# inherit a marker parked at the last demo's target. No <collision> — the drone
+# flies through it, so it can't perturb the episode it illustrates.
 TARGET_MARKER_NAME = "demo_target"
 TARGET_MARKER_SDF = """<?xml version="1.0" ?>
 <sdf version="1.8">
@@ -89,22 +88,15 @@ def _ensure_runtime_dirs():
 
 
 def _spawn_target_marker(gz_node):
-    """Create the red target sphere. Returns True if the world accepted it.
-
-    Reuses the env's gz-transport node and the same /world/empty services the
-    env already drives for reset teleports, so the marker needs no extra
-    connection or launch-file wiring.
-    """
+    """Create the red target sphere. True if the world accepted it."""
     from gz.msgs10.entity_factory_pb2 import EntityFactory
     from gz.msgs10.boolean_pb2 import Boolean
 
     req = EntityFactory()
     req.sdf = TARGET_MARKER_SDF.format(name=TARGET_MARKER_NAME)
-    # Off to the side and below the floor until the first leg positions it, so
-    # it never appears mid-shot at the origin.
     req.pose.position.x = 0.0
     req.pose.position.y = 0.0
-    req.pose.position.z = -5.0
+    req.pose.position.z = -5.0  # under the floor until the first leg places it
     req.allow_renaming = False
     ok, res = gz_node.request(
         '/world/empty/create', req, EntityFactory, Boolean, 5000
@@ -113,8 +105,8 @@ def _spawn_target_marker(gz_node):
 
 
 def _move_target_marker(gz_node, target):
-    """Teleport the marker onto this leg's target. Best-effort: a failure here
-    costs the dot, not the flight, so the demo continues either way."""
+    """Teleport the marker onto this leg's target. Best-effort — a failure costs
+    the dot, not the flight."""
     from gz.msgs10.pose_pb2 import Pose
     from gz.msgs10.boolean_pb2 import Boolean
 
@@ -132,8 +124,7 @@ def _move_target_marker(gz_node, target):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    # The hold policy, not checkpoints_goal/ (phase 1) — that one reaches the
-    # target and then drifts off it, which is exactly what the demo must not show.
+    # Not checkpoints_goal/ (phase 1) — that one reaches the target then drifts off it.
     parser.add_argument('--model', default='checkpoints_goal_hold/best_eval')
     parser.add_argument(
         '--steps-per-leg', type=int, default=350,
