@@ -1,0 +1,64 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    name: zero-Gazebo checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      # No ROS and no Gazebo on purpose. These checks are pure math on a bare
+      # env (built via __new__, so __init__ never runs); tests/conftest.py stubs
+      # the ROS modules quadrotor_hover_env imports at module scope but never
+      # calls on these paths. Installing ROS Jazzy here would cost minutes per
+      # run and exercise nothing extra.
+      - name: Install dependencies
+        run: pip install pytest numpy gymnasium
+
+      - name: Run tests
+        run: pytest -v
+
+  lint:
+    name: syntax
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Catches syntax errors in the ROS/Gazebo-dependent code the smoke job
+      # cannot import — train_hover.py, callbacks.py, eval_hover.py, and the
+      # rest only fail at runtime on a machine with a live sim, which is a slow
+      # way to find a typo.
+      - name: Byte-compile all sources
+        run: |
+          python -m compileall -q \
+            src/quadrotor_sim/quadrotor_sim scripts tests
+
+      - name: Validate SDF/world XML
+        run: |
+          python - <<'PY'
+          import glob, sys, xml.dom.minidom as m
+          bad = []
+          for f in glob.glob('src/quadrotor_sim/**/*.sdf', recursive=True):
+              try:
+                  m.parse(f)
+                  print(f'ok   {f}')
+              except Exception as e:
+                  bad.append((f, e))
+                  print(f'FAIL {f}: {e}')
+          sys.exit(1 if bad else 0)
+          PY

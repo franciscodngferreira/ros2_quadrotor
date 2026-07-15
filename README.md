@@ -1,5 +1,7 @@
 # ros2_quadrotor
 
+[![tests](https://github.com/franciscodngferreira/ros2_quadrotor/actions/workflows/tests.yml/badge.svg)](https://github.com/franciscodngferreira/ros2_quadrotor/actions/workflows/tests.yml)
+
 PPO-trained randomized goal-reaching for a quadrotor in **Gazebo Sim**, wired through **ROS 2 Jazzy** and **ros_gz_bridge**. The drone must fly to a different randomly-sampled 3D target from a randomized spawn pose every episode, with optional Gaussian sensor noise — a step up from the original fixed-point hover task, which is preserved as a legacy mode (see below).
 
 ![Randomized goal-reaching demo](docs/demo.gif)
@@ -29,7 +31,7 @@ In randomized mode, `QuadrotorHoverEnv`'s observation is **body-frame**: `(dx_bo
 - **Observation noise** (Gaussian, off by default) can be enabled to simulate imperfect sensors.
 - **Legacy mode** (`randomize=False`) exactly reproduces the original task: fixed `(0,0,1.0)` spawn/target, 9-dim world-frame/raw-yaw observation, and the original `±0.1 m/s` action scale. The old `quadrotor_hover_ppo.zip` model loads and runs unchanged in this mode.
 
-Not yet implemented (future work): per-episode mass/inertia/motor-constant randomization (needs runtime SDF respawn), wind/force disturbances, IMU-level sensor noise, camera/lidar/GPS perception, multi-waypoint trajectories, PPO vs SAC/TD3 comparison, Docker/CI/pytest infra.
+Not yet implemented (future work): per-episode mass/inertia/motor-constant randomization (needs runtime SDF respawn), wind/force disturbances, IMU-level sensor noise (the `obs_noise` hook exists but is unablated), camera/lidar/GPS perception, multi-waypoint trajectories, PPO vs SAC/TD3 comparison, Docker.
 
 ## Prerequisites
 
@@ -135,6 +137,19 @@ Known cosmetic artifact: `rollout/ep_len_mean` reads slightly **above** `MAX_STE
 
 TensorBoard: `tensorboard --logdir hover_tensorboard`.
 
+## Tests
+
+```bash
+pip install pytest numpy gymnasium
+pytest
+```
+
+Runs the zero-Gazebo checks in `scripts/check_sampling_smoke.py` — spawn/target sampling ranges, quaternion round-trip, reward and crash bounds, progress-shaping telescoping, precision/success bonuses, the stabilization gate's `sigma=0` no-op, the body-frame transform, success-hold termination, and curriculum level-ups. Each becomes its own test case; the script stays runnable standalone.
+
+**No ROS or Gazebo needed**, which is why this runs in CI on every push. The checks build a bare env via `__new__` (so `__init__` never runs) and only exercise pure math; `tests/conftest.py` stubs the ROS modules `quadrotor_hover_env` imports at module scope but never calls on those paths. The stub is a fallback — when ROS *is* importable it's used instead, so the real import path is still exercised locally. `pytest` prints which mode it took.
+
+Not covered here, because they need a live sim: `scripts/check_env_smoke.py` (Gymnasium `check_env` + reset regressions) and `train/test_reset_timing.py` (reset-timing diagnostic — despite the `test_` prefix, `pytest.ini` scopes collection to `tests/` so it isn't picked up).
+
 ## Headless sim only
 
 ```bash
@@ -152,6 +167,7 @@ ros2 launch quadrotor_sim quadrotor.launch.py
 | `scripts/list_checkpoints.py` | List saved checkpoints |
 | `scripts/check_env_smoke.py` | Gymnasium `check_env` smoke test + randomized-reset regression checks |
 | `scripts/check_sampling_smoke.py` | Zero-Gazebo checks for spawn/target sampling, quaternion math, reward/crash bounds |
+| `tests/` | pytest wrapper around the zero-Gazebo checks; runs in CI without ROS |
 
 ## Topics
 
