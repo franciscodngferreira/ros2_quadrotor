@@ -156,7 +156,7 @@ class QuadrotorHoverEnv(gym.Env):
         # spun the executor until ONE callback fired — with IMU at 100Hz and
         # odom at 50Hz that meant each env step spanned only ~10-15ms of sim
         # time, not the 50ms the whole task was designed around: episodes
-        # were really ~5-7s (not 25s), so many randomized targets were
+        # were really ~5-7s (not the intended 25s), so many randomized targets were
         # physically unreachable at 0.35 m/s, and PPO's Gaussian exploration
         # (re-sampled every ~10ms) averaged to near-zero net displacement
         # through the velocity PID. A positive control_dt makes step() spin
@@ -536,16 +536,13 @@ class QuadrotorHoverEnv(gym.Env):
             enable_msg.data = True
             self._enable_pub.publish(enable_msg)
 
-        # Linear scale of 0.35 m/s in randomized mode (up from the original
-        # 0.1, sized for the old fixed-point hover task) so the drone can
-        # physically cover a randomized target up to ~2.5m away within a
-        # 500-step/25s episode with margin to spare (worst case ~7.3s at full
-        # speed, leaving ~18s for correction). At 0.1 m/s the theoretical max
-        # reach was 2.5m with ZERO margin, which left PPO with no learnable
-        # reward gradient on far targets. Legacy mode keeps the original 0.1
-        # scale — quadrotor_hover_ppo.zip was trained against it, and a
-        # bigger scale would make it fly faster/more aggressively than it
-        # ever learned to handle.
+        # 0.35 m/s in randomized mode, up from the 0.1 sized for the old
+        # fixed-point task: a target ~2.5m away then takes ~7.1s of a 500-step
+        # (20s at control_dt=0.04) episode, leaving ~13s to correct. At 0.1 m/s
+        # the theoretical max reach was 2.5m with ZERO margin, so PPO had no
+        # learnable reward gradient on far targets. Legacy keeps 0.1 —
+        # quadrotor_hover_ppo.zip was trained against it and a bigger scale
+        # would fly it harder than it ever learned to handle.
         linear_scale = 0.35 if self.randomize else 0.1
         cmd = Twist()
         cmd.linear.x  = float(np.clip(action[0], -1.0, 1.0)) * linear_scale
@@ -657,7 +654,6 @@ class QuadrotorHoverEnv(gym.Env):
         reward -= 1.0 * dist                                        # 3D distance-to-target penalty
         reward -= 0.2 * stabilization_gate * abs(vz)                # vertical velocity damping (gated)
         reward -= 0.05 * stabilization_gate * (abs(roll) + abs(pitch))  # attitude stabilization (gated)
-        # Coefficients are a starting point — tune after the first training run.
 
         if self.progress_coef and self._prev_dist is not None:
             # Potential-based shaping: credits THIS step for the distance it

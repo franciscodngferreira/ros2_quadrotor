@@ -47,7 +47,7 @@ OBS_NOISE = False  # keep off for the first randomized-goal run; ablate separate
 # Control period in SIM seconds — THE fix for the long-standing plateau.
 # The original step() advanced only ~10-15ms of sim time per step (one
 # executor callback: IMU@100Hz / odom@50Hz), not the 50ms the task design
-# assumed. Episodes were really ~5-7s instead of 25s, making many randomized
+# assumed. Episodes were really ~5-7s instead of that intended 25s, making many randomized
 # targets physically unreachable at 0.35 m/s, and re-sampling PPO's Gaussian
 # exploration every ~10ms averaged out to near-zero net displacement through
 # the velocity PID — the agent could neither reach targets nor explore its
@@ -59,51 +59,29 @@ OBS_NOISE = False  # keep off for the first randomized-goal run; ablate separate
 # spin-once timing (what quadrotor_hover_ppo.zip was trained against).
 CONTROL_DT = 0.04
 
-# End episodes as "won" after holding inside SUCCESS_THRESHOLD for
-# SUCCESS_HOLD_STEPS consecutive steps (0.8s at 25Hz). Literature-backed
-# (termination conditions were key to sample-efficient waypoint reaching):
-# denser data once the policy gets good.
-#
-# Turned OFF after the first goal-reaching run exposed what it actually
-# optimizes. It ends the episode 0.8s after arrival, so the policy is never
-# asked to STAY: rollout/success_rate hit 0.99 while a 5-episode eval_hover.py
-# run scored only 60% (mean final_dist 0.152m). Those measure different things
-# — 0.99 = "reached and held for 0.8s, then the episode was cut", 60% = "still
-# inside 15cm at the 20s mark". The drone reached targets fine and then drifted
-# in and out of the ball for the remaining ~19s, because nothing rewarded
-# staying there.
-#
-# With this False, episodes always run the full MAX_STEPS_PER_EPISODE and the
-# per-step success_bonus/precision_bonus pay out for EVERY step spent inside
-# the radius, so station-keeping is the reward-maximizing behavior. It also
-# makes rollout/success_rate directly comparable to eval_hover.py, since
-# is_success then reduces to "dist < threshold at episode end" — the same
-# question the eval asks.
+# True ends the episode "won" 0.8s after arrival — denser data, but the policy is
+# then never asked to STAY, and the metrics hide it: rollout/success_rate read 0.99
+# while eval_hover.py scored 60% (mean final_dist 0.152m). Both were right and asked
+# different questions — "reached and held 0.8s, then we cut the episode" vs "still
+# inside 15cm at the 20s mark". The drone arrived, then drifted for the other ~19s.
+# False runs the full episode, so per-step success/precision bonuses make
+# station-keeping reward-maximizing and is_success asks the eval's question.
 TERMINATE_ON_SUCCESS = False
 SUCCESS_HOLD_STEPS = 20  # inert while TERMINATE_ON_SUCCESS is False
 
-# Adaptive curriculum: targets start close (0.75m xy range) and expand toward
-# the full task spec whenever >60% of the last 20 episodes succeed. Watch
-# train.log for "[curriculum] level up" lines — the leading indicator that
-# learning is actually progressing.
-# Off for the warm-started station-keeping run: RESUME_FROM's policy already
-# cleared this curriculum to max level (3/3, the full target spec) in the
-# previous run, so restarting it at level 0 would re-teach solved navigation —
-# and worse, level-ups need >60% of the last 20 episodes, which the stricter
-# end-of-episode is_success (see TERMINATE_ON_SUCCESS) may not clear early on,
-# stalling the run at easy targets all night. Train directly at the full spec.
+# Targets start close (0.75m xy) and widen when >60% of the last 20 episodes
+# succeed; watch train.log for "[curriculum] level up". Off here because
+# RESUME_FROM's policy already cleared it to max level: restarting at level 0
+# would re-teach solved navigation, and level-ups gated on the stricter
+# end-of-episode is_success (see TERMINATE_ON_SUCCESS) might never fire,
+# stalling the run on easy targets all night.
 CURRICULUM = False
 
-# Potential-based progress shaping (reward += PROGRESS_COEF * (prev_dist -
-# dist) each step, on top of the existing distance penalty). Added after
-# diagnosing that the policy was producing real, non-trivial actions but
-# making ~zero net progress toward target — the static distance-penalty
-# reward doesn't directly credit the action that just closed distance,
-# leaving that purely to TD bootstrapping. 0.0 = off, byte-identical to the
-# reward this project has used so far. 50.0 chosen so a step's max realistic
-# displacement (~0.0175m at the 0.35 m/s action scale) contributes shaping
-# reward (~0.9) comparable in magnitude to the existing per-step terms —
-# a starting point, tune after the first run with this enabled.
+# Potential-based progress shaping: reward += PROGRESS_COEF * (prev_dist - dist).
+# The static distance penalty doesn't credit the action that just closed distance,
+# leaving that to TD bootstrapping — the policy was producing real actions but
+# ~zero net progress. 50.0 makes a step's max displacement (~0.0175m at 0.35 m/s)
+# worth ~0.9, comparable to the other per-step terms. 0.0 = off.
 PROGRESS_COEF = 50.0
 
 # Precision bonus (Gaussian, peaks at the target, negligible a few sigma
