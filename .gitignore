@@ -24,7 +24,16 @@ dist/
 # Training / experiment outputs (regenerate or store elsewhere)
 hover_tensorboard/
 checkpoints/
+checkpoints_goal*/
 quadrotor_hover_ppo.zip
+quadrotor_goal_ppo*.zip
+quadrotor_goal_ppo*.pkl
+train.log
+train_prev_*.log
+
+# Demo captures — the committed artifact is docs/demo.gif; the raw GUI
+# recordings are tens of MB and would live in git history forever.
+*.mp4
 
 # Editors
 .idea/

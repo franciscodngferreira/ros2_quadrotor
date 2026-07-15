@@ -4,6 +4,13 @@
 
     <!-- Physics engine -->
     <physics name="1ms" type="dart">
+      <!-- Demo/eval fidelity — must stay 1ms/RTF=1.0: the legacy
+           quadrotor_hover_ppo.zip model's step pacing is callback-based
+           (wall-clock-entangled), and a regression eval showed changing
+           either setting degrades its precision (0.106m -> 0.158m final
+           dist). Training uses empty_train.sdf (2ms, uncapped RTF) instead;
+           the goal-reaching env is immune to those settings because it
+           paces itself by sim time (control_dt). -->
       <max_step_size>0.001</max_step_size>
       <real_time_factor>1.0</real_time_factor>
     </physics>
@@ -49,8 +56,8 @@
             </plane>
           </geometry>
           <material>
-            <ambient>0.8 0.8 0.8 1</ambient>
-            <diffuse>0.8 0.8 0.8 1</diffuse>
+            <ambient>0.18 0.45 0.20 1</ambient>
+            <diffuse>0.22 0.58 0.25 1</diffuse>
           </material>
         </visual>
       </link>
