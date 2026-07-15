@@ -24,7 +24,7 @@ jobs:
       # calls on these paths. Installing ROS Jazzy here would cost minutes per
       # run and exercise nothing extra.
       - name: Install dependencies
-        run: pip install pytest numpy gymnasium
+        run: pip install -r requirements-dev.txt
 
       - name: Run tests
         run: pytest -v

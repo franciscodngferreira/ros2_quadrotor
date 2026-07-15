@@ -1,0 +1,9 @@
+# Dependencies for the zero-Gazebo test suite (see README "Tests").
+#
+# Deliberately NOT the training stack: running these checks needs neither
+# stable-baselines3/torch nor ROS/Gazebo. quadrotor_hover_env imports gymnasium
+# at module scope and subclasses gym.Env, so that one is required to import the
+# module at all; numpy does the actual arithmetic under test.
+pytest>=8.0
+numpy>=1.26
+gymnasium>=0.29

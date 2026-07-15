@@ -140,7 +140,7 @@ TensorBoard: `tensorboard --logdir hover_tensorboard`.
 ## Tests
 
 ```bash
-pip install pytest numpy gymnasium
+pip install -r requirements-dev.txt
 pytest
 ```
 
