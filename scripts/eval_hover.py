@@ -31,8 +31,10 @@ def main():
     )
     parser.add_argument(
         '--model',
-        default='quadrotor_hover_ppo',
-        help='SB3 model path (default: quadrotor_hover_ppo.zip from training)',
+        default='checkpoints_goal_hold/best_eval',
+        help='SB3 model path (default: the station-keeping policy — the current '
+             'randomized-goal task). For the legacy fixed-point model pass '
+             '--model quadrotor_hover_ppo --no-randomize.',
     )
     parser.add_argument('--episodes', type=int, default=5)
     parser.add_argument(

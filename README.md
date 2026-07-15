@@ -64,10 +64,10 @@ ros2 launch quadrotor_sim quadrotor_gui.launch.py
 source ~/rl_venv/bin/activate
 source /opt/ros/jazzy/setup.bash && source install/setup.bash
 cd ~/ros2_ws
-python3 scripts/eval_hover.py --model quadrotor_goal_ppo --episodes 100 --success-threshold 0.15
+python3 scripts/eval_hover.py --episodes 100 --success-threshold 0.15
 ```
 
-Default model: `quadrotor_hover_ppo.zip` (legacy fixed-point task — pass `--no-randomize` to match it). New randomized-goal model: `--model quadrotor_goal_ppo` or `--model checkpoints_goal/best_eval`. `--episodes 100` gives a portfolio-ready success-rate number; use fewer for a quick look.
+Default model is `checkpoints_goal_hold/best_eval` — the station-keeping policy the Results table above measures. `--episodes 100` gives a statistic that holds up; use fewer for a quick look. For the legacy fixed-point task: `--model quadrotor_hover_ppo --no-randomize`. Checkpoints aren't tracked in git (see `.gitignore`), so this needs a locally trained model — run the two phases under Train below to reproduce one.
 
 Longer recording: `python3 scripts/eval_hover.py --max-steps 2000 --episodes 1`
 
@@ -107,7 +107,23 @@ The task is trained in **two phases**, and the current defaults are the second o
 1. **Reach** — `TERMINATE_ON_SUCCESS = True`, `CURRICULUM = True` → `checkpoints_goal/`. Learns to fly to an arbitrary target. Ends up reaching reliably but drifting once there (see the success-termination bullet above).
 2. **Hold** (current defaults) — `RESUME_FROM = "checkpoints_goal/best_eval"`, `TERMINATE_ON_SUCCESS = False`, `CURRICULUM = False` → `checkpoints_goal_hold/`, final model `quadrotor_goal_ppo_hold.zip`. Warm-starts from phase 1 rather than relearning navigation from scratch, and only has to learn to *stay*. Its `<path>_vecnormalize.pkl` is loaded alongside the weights — a fresh `VecNormalize` would feed the policy differently-scaled observations than the ones it learned on.
 
-Phase 2 converges fast: from the phase-1 policy, `rollout/success_rate` went 0.5 → 1.0 and deterministic eval reward 18,695 → 23,093 within ~100k steps (~1 hour), with 5/5 eval episodes running the full 500 steps and zero crashes. Reward decomposes as ~44/step against a 56/step ceiling (1 survival + 5 precision + 50 success), i.e. the drone is inside the 15cm ball for ~80% of the episode; the missing ~20% is the initial flight to the target, which takes ~3.6s of the 20s episode.
+Phase 2 converges fast: from the phase-1 policy, `rollout/success_rate` went 0.5 → 1.0 and deterministic eval reward 18,695 → 23,093 within ~100k steps (~1 hour). Reward decomposes as ~44/step against a 56/step ceiling (1 survival + 5 precision + 50 success), i.e. the drone is inside the 15cm ball for ~80% of the episode; the missing ~20% is the initial flight to the target, which takes ~3.6s of the 20s episode.
+
+## Results
+
+`scripts/eval_hover.py --model checkpoints_goal_hold/best_eval --episodes 100` — full data in [`docs/eval_hold_100ep.json`](docs/eval_hold_100ep.json).
+
+| metric | value |
+|---|---|
+| success rate (`final_dist < 0.15m` at the 20s mark) | **100/100**, 95% CI [0.963, 1.000] |
+| episodes completing all 500 steps | 100/100 (zero crashes) |
+| final distance to target | mean **0.054m**, median 0.051m, sd 0.010m |
+| final distance, worst of 100 | **0.082m** — 55% of the error budget |
+| time-averaged distance | 0.206m (dominated by the ~3.6s approach) |
+
+The spread is the interesting part: sd of 1cm across 100 randomized spawn/target pairs, range 3.9–8.2cm. The policy converges to the same precision regardless of where it starts or where the target is, and the worst episode of a hundred still left 45% of the tolerance unused.
+
+Measured independently of training: `eval_hover.py` builds the env from constructor defaults, so **all reward shaping is off**. Its reward numbers are therefore not comparable to the shaped training reward — success rate and `final_dist` are the metrics. Reproduce with a live sim (`quadrotor.launch.py`) and the command above; ~30 min at ~29 env steps/s.
 
 Other knobs: `RANDOMIZE = True`, `CONTROL_DT = 0.04`, `USE_CHECKPOINTS = True`. Checkpoint dirs are kept separate per experiment so earlier runs aren't overwritten. Set `RANDOMIZE = False` to reproduce the original fixed-point task as an A/B baseline.
 

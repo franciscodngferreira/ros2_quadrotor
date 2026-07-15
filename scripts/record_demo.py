@@ -132,7 +132,9 @@ def _move_target_marker(gz_node, target):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--model', default='checkpoints_goal/best_eval')
+    # The hold policy, not checkpoints_goal/ (phase 1) — that one reaches the
+    # target and then drifts off it, which is exactly what the demo must not show.
+    parser.add_argument('--model', default='checkpoints_goal_hold/best_eval')
     parser.add_argument(
         '--steps-per-leg', type=int, default=350,
         help='Steps per leg before truncation (350 * 0.04 s = 14 s of sim time)',

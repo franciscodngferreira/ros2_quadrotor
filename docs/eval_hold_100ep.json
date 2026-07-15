@@ -1,0 +1,833 @@
+{
+  "model": "checkpoints_goal_hold/best_eval (23,093 deterministic-eval reward @ 102400 steps)",
+  "command": "python3 scripts/eval_hover.py --model checkpoints_goal_hold/best_eval --episodes 100 --success-threshold 0.15",
+  "date": "2026-07-15",
+  "task": {
+    "randomize": true,
+    "obs_noise": false,
+    "control_dt": 0.04,
+    "max_steps": 500,
+    "success_threshold_m": 0.15,
+    "note": "eval_hover.py builds the env from constructor defaults: all reward shaping OFF. Reward here is NOT comparable to training's shaped reward; success rate and final_dist are the metrics."
+  },
+  "episodes": 100,
+  "success_rate": 1.0,
+  "success_rate_wilson_95ci": [
+    0.963,
+    1.0
+  ],
+  "episodes_completing_500_steps": 100,
+  "crashes": 0,
+  "final_dist_m": {
+    "mean": 0.0541,
+    "median": 0.0515,
+    "sd": 0.0102,
+    "min": 0.039,
+    "p95": 0.078,
+    "max": 0.082
+  },
+  "worst_case_pct_of_error_budget": 54.7,
+  "mean_time_avg_dist_m": 0.2055,
+  "episodes_detail": [
+    {
+      "ep": 1,
+      "reward": 434.7,
+      "steps": 500,
+      "final_dist": 0.052,
+      "mean_dist": 0.118,
+      "success": true
+    },
+    {
+      "ep": 2,
+      "reward": 376.0,
+      "steps": 500,
+      "final_dist": 0.056,
+      "mean_dist": 0.244,
+      "success": true
+    },
+    {
+      "ep": 3,
+      "reward": 398.6,
+      "steps": 500,
+      "final_dist": 0.049,
+      "mean_dist": 0.195,
+      "success": true
+    },
+    {
+      "ep": 4,
+      "reward": 334.2,
+      "steps": 500,
+      "final_dist": 0.044,
+      "mean_dist": 0.324,
+      "success": true
+    },
+    {
+      "ep": 5,
+      "reward": 412.2,
+      "steps": 500,
+      "final_dist": 0.053,
+      "mean_dist": 0.168,
+      "success": true
+    },
+    {
+      "ep": 6,
+      "reward": 342.6,
+      "steps": 500,
+      "final_dist": 0.055,
+      "mean_dist": 0.307,
+      "success": true
+    },
+    {
+      "ep": 7,
+      "reward": 426.5,
+      "steps": 500,
+      "final_dist": 0.049,
+      "mean_dist": 0.137,
+      "success": true
+    },
+    {
+      "ep": 8,
+      "reward": 369.4,
+      "steps": 500,
+      "final_dist": 0.04,
+      "mean_dist": 0.254,
+      "success": true
+    },
+    {
+      "ep": 9,
+      "reward": 406.2,
+      "steps": 500,
+      "final_dist": 0.044,
+      "mean_dist": 0.178,
+      "success": true
+    },
+    {
+      "ep": 10,
+      "reward": 417.0,
+      "steps": 500,
+      "final_dist": 0.047,
+      "mean_dist": 0.157,
+      "success": true
+    },
+    {
+      "ep": 11,
+      "reward": 440.9,
+      "steps": 500,
+      "final_dist": 0.045,
+      "mean_dist": 0.114,
+      "success": true
+    },
+    {
+      "ep": 12,
+      "reward": 397.4,
+      "steps": 500,
+      "final_dist": 0.059,
+      "mean_dist": 0.194,
+      "success": true
+    },
+    {
+      "ep": 13,
+      "reward": 382.4,
+      "steps": 500,
+      "final_dist": 0.047,
+      "mean_dist": 0.23,
+      "success": true
+    },
+    {
+      "ep": 14,
+      "reward": 440.4,
+      "steps": 500,
+      "final_dist": 0.047,
+      "mean_dist": 0.113,
+      "success": true
+    },
+    {
+      "ep": 15,
+      "reward": 424.1,
+      "steps": 500,
+      "final_dist": 0.055,
+      "mean_dist": 0.142,
+      "success": true
+    },
+    {
+      "ep": 16,
+      "reward": 352.9,
+      "steps": 500,
+      "final_dist": 0.076,
+      "mean_dist": 0.292,
+      "success": true
+    },
+    {
+      "ep": 17,
+      "reward": 376.9,
+      "steps": 500,
+      "final_dist": 0.066,
+      "mean_dist": 0.24,
+      "success": true
+    },
+    {
+      "ep": 18,
+      "reward": 389.5,
+      "steps": 500,
+      "final_dist": 0.062,
+      "mean_dist": 0.215,
+      "success": true
+    },
+    {
+      "ep": 19,
+      "reward": 392.5,
+      "steps": 500,
+      "final_dist": 0.047,
+      "mean_dist": 0.206,
+      "success": true
+    },
+    {
+      "ep": 20,
+      "reward": 296.9,
+      "steps": 500,
+      "final_dist": 0.05,
+      "mean_dist": 0.4,
+      "success": true
+    },
+    {
+      "ep": 21,
+      "reward": 417.0,
+      "steps": 500,
+      "final_dist": 0.063,
+      "mean_dist": 0.162,
+      "success": true
+    },
+    {
+      "ep": 22,
+      "reward": 395.3,
+      "steps": 500,
+      "final_dist": 0.041,
+      "mean_dist": 0.206,
+      "success": true
+    },
+    {
+      "ep": 23,
+      "reward": 362.8,
+      "steps": 500,
+      "final_dist": 0.049,
+      "mean_dist": 0.268,
+      "success": true
+    },
+    {
+      "ep": 24,
+      "reward": 424.7,
+      "steps": 500,
+      "final_dist": 0.051,
+      "mean_dist": 0.143,
+      "success": true
+    },
+    {
+      "ep": 25,
+      "reward": 414.9,
+      "steps": 500,
+      "final_dist": 0.05,
+      "mean_dist": 0.158,
+      "success": true
+    },
+    {
+      "ep": 26,
+      "reward": 330.2,
+      "steps": 500,
+      "final_dist": 0.078,
+      "mean_dist": 0.336,
+      "success": true
+    },
+    {
+      "ep": 27,
+      "reward": 356.1,
+      "steps": 500,
+      "final_dist": 0.049,
+      "mean_dist": 0.279,
+      "success": true
+    },
+    {
+      "ep": 28,
+      "reward": 445.8,
+      "steps": 500,
+      "final_dist": 0.053,
+      "mean_dist": 0.102,
+      "success": true
+    },
+    {
+      "ep": 29,
+      "reward": 321.9,
+      "steps": 500,
+      "final_dist": 0.078,
+      "mean_dist": 0.344,
+      "success": true
+    },
+    {
+      "ep": 30,
+      "reward": 359.5,
+      "steps": 500,
+      "final_dist": 0.069,
+      "mean_dist": 0.276,
+      "success": true
+    },
+    {
+      "ep": 31,
+      "reward": 407.1,
+      "steps": 500,
+      "final_dist": 0.049,
+      "mean_dist": 0.176,
+      "success": true
+    },
+    {
+      "ep": 32,
+      "reward": 390.7,
+      "steps": 500,
+      "final_dist": 0.041,
+      "mean_dist": 0.215,
+      "success": true
+    },
+    {
+      "ep": 33,
+      "reward": 415.1,
+      "steps": 500,
+      "final_dist": 0.052,
+      "mean_dist": 0.164,
+      "success": true
+    },
+    {
+      "ep": 34,
+      "reward": 400.0,
+      "steps": 500,
+      "final_dist": 0.048,
+      "mean_dist": 0.193,
+      "success": true
+    },
+    {
+      "ep": 35,
+      "reward": 405.1,
+      "steps": 500,
+      "final_dist": 0.047,
+      "mean_dist": 0.187,
+      "success": true
+    },
+    {
+      "ep": 36,
+      "reward": 419.3,
+      "steps": 500,
+      "final_dist": 0.063,
+      "mean_dist": 0.153,
+      "success": true
+    },
+    {
+      "ep": 37,
+      "reward": 405.0,
+      "steps": 500,
+      "final_dist": 0.06,
+      "mean_dist": 0.186,
+      "success": true
+    },
+    {
+      "ep": 38,
+      "reward": 342.9,
+      "steps": 500,
+      "final_dist": 0.073,
+      "mean_dist": 0.308,
+      "success": true
+    },
+    {
+      "ep": 39,
+      "reward": 392.7,
+      "steps": 500,
+      "final_dist": 0.054,
+      "mean_dist": 0.203,
+      "success": true
+    },
+    {
+      "ep": 40,
+      "reward": 404.3,
+      "steps": 500,
+      "final_dist": 0.056,
+      "mean_dist": 0.182,
+      "success": true
+    },
+    {
+      "ep": 41,
+      "reward": 436.2,
+      "steps": 500,
+      "final_dist": 0.048,
+      "mean_dist": 0.119,
+      "success": true
+    },
+    {
+      "ep": 42,
+      "reward": 420.3,
+      "steps": 500,
+      "final_dist": 0.059,
+      "mean_dist": 0.155,
+      "success": true
+    },
+    {
+      "ep": 43,
+      "reward": 373.0,
+      "steps": 500,
+      "final_dist": 0.065,
+      "mean_dist": 0.249,
+      "success": true
+    },
+    {
+      "ep": 44,
+      "reward": 408.5,
+      "steps": 500,
+      "final_dist": 0.04,
+      "mean_dist": 0.177,
+      "success": true
+    },
+    {
+      "ep": 45,
+      "reward": 401.4,
+      "steps": 500,
+      "final_dist": 0.058,
+      "mean_dist": 0.194,
+      "success": true
+    },
+    {
+      "ep": 46,
+      "reward": 406.2,
+      "steps": 500,
+      "final_dist": 0.063,
+      "mean_dist": 0.181,
+      "success": true
+    },
+    {
+      "ep": 47,
+      "reward": 412.5,
+      "steps": 500,
+      "final_dist": 0.043,
+      "mean_dist": 0.164,
+      "success": true
+    },
+    {
+      "ep": 48,
+      "reward": 364.8,
+      "steps": 500,
+      "final_dist": 0.052,
+      "mean_dist": 0.262,
+      "success": true
+    },
+    {
+      "ep": 49,
+      "reward": 377.1,
+      "steps": 500,
+      "final_dist": 0.062,
+      "mean_dist": 0.239,
+      "success": true
+    },
+    {
+      "ep": 50,
+      "reward": 403.3,
+      "steps": 500,
+      "final_dist": 0.047,
+      "mean_dist": 0.181,
+      "success": true
+    },
+    {
+      "ep": 51,
+      "reward": 397.9,
+      "steps": 500,
+      "final_dist": 0.05,
+      "mean_dist": 0.196,
+      "success": true
+    },
+    {
+      "ep": 52,
+      "reward": 413.9,
+      "steps": 500,
+      "final_dist": 0.055,
+      "mean_dist": 0.159,
+      "success": true
+    },
+    {
+      "ep": 53,
+      "reward": 430.6,
+      "steps": 500,
+      "final_dist": 0.072,
+      "mean_dist": 0.133,
+      "success": true
+    },
+    {
+      "ep": 54,
+      "reward": 429.8,
+      "steps": 500,
+      "final_dist": 0.06,
+      "mean_dist": 0.137,
+      "success": true
+    },
+    {
+      "ep": 55,
+      "reward": 443.1,
+      "steps": 500,
+      "final_dist": 0.047,
+      "mean_dist": 0.109,
+      "success": true
+    },
+    {
+      "ep": 56,
+      "reward": 434.1,
+      "steps": 500,
+      "final_dist": 0.055,
+      "mean_dist": 0.127,
+      "success": true
+    },
+    {
+      "ep": 57,
+      "reward": 397.4,
+      "steps": 500,
+      "final_dist": 0.047,
+      "mean_dist": 0.2,
+      "success": true
+    },
+    {
+      "ep": 58,
+      "reward": 351.6,
+      "steps": 500,
+      "final_dist": 0.052,
+      "mean_dist": 0.29,
+      "success": true
+    },
+    {
+      "ep": 59,
+      "reward": 396.7,
+      "steps": 500,
+      "final_dist": 0.046,
+      "mean_dist": 0.196,
+      "success": true
+    },
+    {
+      "ep": 60,
+      "reward": 390.0,
+      "steps": 500,
+      "final_dist": 0.049,
+      "mean_dist": 0.216,
+      "success": true
+    },
+    {
+      "ep": 61,
+      "reward": 426.0,
+      "steps": 500,
+      "final_dist": 0.05,
+      "mean_dist": 0.138,
+      "success": true
+    },
+    {
+      "ep": 62,
+      "reward": 425.7,
+      "steps": 500,
+      "final_dist": 0.055,
+      "mean_dist": 0.142,
+      "success": true
+    },
+    {
+      "ep": 63,
+      "reward": 413.6,
+      "steps": 500,
+      "final_dist": 0.039,
+      "mean_dist": 0.169,
+      "success": true
+    },
+    {
+      "ep": 64,
+      "reward": 375.8,
+      "steps": 500,
+      "final_dist": 0.044,
+      "mean_dist": 0.245,
+      "success": true
+    },
+    {
+      "ep": 65,
+      "reward": 385.6,
+      "steps": 500,
+      "final_dist": 0.039,
+      "mean_dist": 0.225,
+      "success": true
+    },
+    {
+      "ep": 66,
+      "reward": 378.8,
+      "steps": 500,
+      "final_dist": 0.081,
+      "mean_dist": 0.232,
+      "success": true
+    },
+    {
+      "ep": 67,
+      "reward": 393.7,
+      "steps": 500,
+      "final_dist": 0.072,
+      "mean_dist": 0.208,
+      "success": true
+    },
+    {
+      "ep": 68,
+      "reward": 363.3,
+      "steps": 500,
+      "final_dist": 0.048,
+      "mean_dist": 0.269,
+      "success": true
+    },
+    {
+      "ep": 69,
+      "reward": 423.6,
+      "steps": 500,
+      "final_dist": 0.082,
+      "mean_dist": 0.142,
+      "success": true
+    },
+    {
+      "ep": 70,
+      "reward": 380.4,
+      "steps": 500,
+      "final_dist": 0.049,
+      "mean_dist": 0.233,
+      "success": true
+    },
+    {
+      "ep": 71,
+      "reward": 444.5,
+      "steps": 500,
+      "final_dist": 0.052,
+      "mean_dist": 0.103,
+      "success": true
+    },
+    {
+      "ep": 72,
+      "reward": 439.1,
+      "steps": 500,
+      "final_dist": 0.05,
+      "mean_dist": 0.113,
+      "success": true
+    },
+    {
+      "ep": 73,
+      "reward": 414.2,
+      "steps": 500,
+      "final_dist": 0.054,
+      "mean_dist": 0.162,
+      "success": true
+    },
+    {
+      "ep": 74,
+      "reward": 375.0,
+      "steps": 500,
+      "final_dist": 0.045,
+      "mean_dist": 0.243,
+      "success": true
+    },
+    {
+      "ep": 75,
+      "reward": 405.4,
+      "steps": 500,
+      "final_dist": 0.053,
+      "mean_dist": 0.183,
+      "success": true
+    },
+    {
+      "ep": 76,
+      "reward": 404.7,
+      "steps": 500,
+      "final_dist": 0.051,
+      "mean_dist": 0.187,
+      "success": true
+    },
+    {
+      "ep": 77,
+      "reward": 365.5,
+      "steps": 500,
+      "final_dist": 0.042,
+      "mean_dist": 0.264,
+      "success": true
+    },
+    {
+      "ep": 78,
+      "reward": 421.5,
+      "steps": 500,
+      "final_dist": 0.049,
+      "mean_dist": 0.152,
+      "success": true
+    },
+    {
+      "ep": 79,
+      "reward": 372.2,
+      "steps": 500,
+      "final_dist": 0.04,
+      "mean_dist": 0.251,
+      "success": true
+    },
+    {
+      "ep": 80,
+      "reward": 362.8,
+      "steps": 500,
+      "final_dist": 0.055,
+      "mean_dist": 0.263,
+      "success": true
+    },
+    {
+      "ep": 81,
+      "reward": 439.4,
+      "steps": 500,
+      "final_dist": 0.052,
+      "mean_dist": 0.118,
+      "success": true
+    },
+    {
+      "ep": 82,
+      "reward": 440.6,
+      "steps": 500,
+      "final_dist": 0.051,
+      "mean_dist": 0.111,
+      "success": true
+    },
+    {
+      "ep": 83,
+      "reward": 439.3,
+      "steps": 500,
+      "final_dist": 0.053,
+      "mean_dist": 0.112,
+      "success": true
+    },
+    {
+      "ep": 84,
+      "reward": 402.0,
+      "steps": 500,
+      "final_dist": 0.079,
+      "mean_dist": 0.193,
+      "success": true
+    },
+    {
+      "ep": 85,
+      "reward": 433.8,
+      "steps": 500,
+      "final_dist": 0.049,
+      "mean_dist": 0.124,
+      "success": true
+    },
+    {
+      "ep": 86,
+      "reward": 290.9,
+      "steps": 500,
+      "final_dist": 0.045,
+      "mean_dist": 0.407,
+      "success": true
+    },
+    {
+      "ep": 87,
+      "reward": 398.9,
+      "steps": 500,
+      "final_dist": 0.054,
+      "mean_dist": 0.19,
+      "success": true
+    },
+    {
+      "ep": 88,
+      "reward": 375.3,
+      "steps": 500,
+      "final_dist": 0.06,
+      "mean_dist": 0.246,
+      "success": true
+    },
+    {
+      "ep": 89,
+      "reward": 392.9,
+      "steps": 500,
+      "final_dist": 0.06,
+      "mean_dist": 0.207,
+      "success": true
+    },
+    {
+      "ep": 90,
+      "reward": 411.0,
+      "steps": 500,
+      "final_dist": 0.044,
+      "mean_dist": 0.174,
+      "success": true
+    },
+    {
+      "ep": 91,
+      "reward": 355.8,
+      "steps": 500,
+      "final_dist": 0.078,
+      "mean_dist": 0.283,
+      "success": true
+    },
+    {
+      "ep": 92,
+      "reward": 292.7,
+      "steps": 500,
+      "final_dist": 0.07,
+      "mean_dist": 0.41,
+      "success": true
+    },
+    {
+      "ep": 93,
+      "reward": 321.3,
+      "steps": 500,
+      "final_dist": 0.045,
+      "mean_dist": 0.348,
+      "success": true
+    },
+    {
+      "ep": 94,
+      "reward": 404.1,
+      "steps": 500,
+      "final_dist": 0.048,
+      "mean_dist": 0.18,
+      "success": true
+    },
+    {
+      "ep": 95,
+      "reward": 330.2,
+      "steps": 500,
+      "final_dist": 0.05,
+      "mean_dist": 0.332,
+      "success": true
+    },
+    {
+      "ep": 96,
+      "reward": 439.5,
+      "steps": 500,
+      "final_dist": 0.047,
+      "mean_dist": 0.114,
+      "success": true
+    },
+    {
+      "ep": 97,
+      "reward": 417.4,
+      "steps": 500,
+      "final_dist": 0.055,
+      "mean_dist": 0.158,
+      "success": true
+    },
+    {
+      "ep": 98,
+      "reward": 362.8,
+      "steps": 500,
+      "final_dist": 0.068,
+      "mean_dist": 0.27,
+      "success": true
+    },
+    {
+      "ep": 99,
+      "reward": 415.6,
+      "steps": 500,
+      "final_dist": 0.05,
+      "mean_dist": 0.159,
+      "success": true
+    },
+    {
+      "ep": 100,
+      "reward": 328.4,
+      "steps": 500,
+      "final_dist": 0.067,
+      "mean_dist": 0.338,
+      "success": true
+    }
+  ]
+}
