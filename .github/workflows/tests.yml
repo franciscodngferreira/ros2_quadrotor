@@ -17,6 +17,10 @@ jobs:
         with:
           python-version: '3.12'
           cache: pip
+          # Required: setup-python's default cache glob is **/requirements.txt,
+          # which does not match requirements-dev.txt, and it errors out rather
+          # than skipping the cache.
+          cache-dependency-path: requirements-dev.txt
 
       # No ROS and no Gazebo on purpose. These checks are pure math on a bare
       # env (built via __new__, so __init__ never runs); tests/conftest.py stubs
