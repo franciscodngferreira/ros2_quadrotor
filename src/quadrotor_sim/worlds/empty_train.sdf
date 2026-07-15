@@ -1,0 +1,69 @@
+<?xml version="1.0" ?>
+<sdf version="1.8">
+  <world name="empty">
+
+    <!-- Physics engine -->
+    <physics name="1ms" type="dart">
+      <!-- TRAINING world — physics tuned for RL throughput, not human
+           viewing. 2ms steps double physics throughput vs 1ms with no
+           measurable behavior change for the goal task (verified: identical
+           P-controller reach dynamics, exact 0.04s control_dt pacing), and
+           real_time_factor 0 lets the sim run as fast as the CPU allows —
+           safe because QuadrotorHoverEnv paces itself by SIM time
+           (control_dt keyed on odometry stamps). Demos/GUI/legacy eval use
+           empty.sdf (1ms, RTF=1.0) instead; the legacy model's timing is
+           wall-clock-entangled and regresses under these settings. -->
+      <max_step_size>0.002</max_step_size>
+      <real_time_factor>0</real_time_factor>
+    </physics>
+
+    <!-- Required Gazebo plugins -->
+    <plugin filename="gz-sim-physics-system"
+            name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system"
+            name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system"
+            name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-sensors-system"
+            name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+
+    <!-- Sunlight -->
+    <light name="sun" type="directional">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <!-- Ground plane -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+  </world>
+</sdf>

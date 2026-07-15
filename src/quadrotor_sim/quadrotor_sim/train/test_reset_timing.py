@@ -1,86 +1,78 @@
 #!/usr/bin/env python3
 """
-Timing diagnostic for Gazebo reset sequence.
-Run while Gazebo is already up (use train_hover.py to launch it first,
-then Ctrl+C before training starts, or add a breakpoint).
-Or launch Gazebo separately and run this standalone.
+Timing diagnostic for the randomized-pose reset sequence in QuadrotorHoverEnv.
+
+Unlike the original version of this script (which reimplemented a standalone
+pause/reset/unpause loop against a single fixed point using the old
+`reset: {all: true}` service), this drives the ACTUAL QuadrotorHoverEnv
+end-to-end — same _reset_pose_only/_at_spawn_pose/_wait_for_obs code path
+used in training — across both explicit edge-case poses (spawn-range
+corners, yaw=+-pi) and random samples, to confirm the pose-relative
+_at_spawn_pose generalization (added for randomized spawn/target support)
+converges as reliably as the original fixed-point teleport did.
+
+Run standalone: launch Gazebo first (e.g. `ros2 launch quadrotor_sim
+quadrotor.launch.py gz_args:="-s -r"`), then run this script.
 """
-import subprocess
+import math
+import os
+import sys
 import time
-import rclpy
-import rclpy.context
-import rclpy.executors
-from rclpy.qos import QoSProfile, ReliabilityPolicy
-from nav_msgs.msg import Odometry
-from std_msgs.msg import Bool
-from geometry_msgs.msg import Twist
 
-odom_received = False
-odom_z = None
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
-def odom_cb(msg):
-    global odom_received, odom_z
-    odom_received = True
-    odom_z = msg.pose.pose.position.z
+from quadrotor_sim.envs.quadrotor_hover_env import QuadrotorHoverEnv  # noqa: E402
 
-def gz_control(req):
-    subprocess.run([
-        'gz', 'service', '-s', '/world/empty/control',
-        '--reqtype', 'gz.msgs.WorldControl',
-        '--reptype', 'gz.msgs.Boolean',
-        '--timeout', '2000',
-        '--req', req
-    ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-def wait_for_odom(executor, timeout=10.0):
-    global odom_received
-    odom_received = False
+def timed_reset(env, forced_pose=None):
+    if forced_pose is not None:
+        original = env._sample_spawn_pose
+        env._sample_spawn_pose = lambda: forced_pose
     start = time.time()
-    while not odom_received:
-        executor.spin_once(timeout_sec=0.1)
-        elapsed = time.time() - start
-        if elapsed > timeout:
-            print(f"  TIMEOUT after {timeout}s — odom never arrived")
-            return False
-    print(f"  odom received in {time.time()-start:.2f}s, z={odom_z:.3f}")
-    return True
+    env.reset()
+    elapsed = time.time() - start
+    if forced_pose is not None:
+        env._sample_spawn_pose = original
+    return elapsed
+
 
 def main():
-    ctx = rclpy.context.Context()
-    rclpy.init(context=ctx)
-    node = rclpy.create_node('timing_test', context=ctx)
-    executor = rclpy.executors.SingleThreadedExecutor(context=ctx)
-    executor.add_node(node)
+    env = QuadrotorHoverEnv(randomize=True)
+    env.reset()  # first reset — fast path, not timed
 
-    qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.RELIABLE)
-    node.create_subscription(Odometry, '/quadrotor/odom', odom_cb, qos)
-    enable_pub = node.create_publisher(Bool, '/quadrotor/enable', 10)
-    cmd_pub = node.create_publisher(Twist, '/quadrotor/cmd_vel', 10)
+    edge_cases = [
+        ("xy corner +, yaw=+pi",  (env.spawn_xy_range, env.spawn_xy_range, 1.0, math.pi, 0.0, 0.0)),
+        ("xy corner -, yaw=-pi",  (-env.spawn_xy_range, -env.spawn_xy_range, 1.0, -math.pi, 0.0, 0.0)),
+        ("z low, max tilt",       (0.0, 0.0, env.spawn_z_range[0], 0.0, env.spawn_tilt_jitter, env.spawn_tilt_jitter)),
+        ("z high, max tilt",      (0.0, 0.0, env.spawn_z_range[1], 0.0, -env.spawn_tilt_jitter, -env.spawn_tilt_jitter)),
+        ("yaw=+pi/2",             (0.0, 0.0, 1.0, math.pi / 2, 0.0, 0.0)),
+    ]
 
-    enable_msg = Bool(); enable_msg.data = True
-    cmd = Twist()
+    print(f"\n--- Edge-case randomized-pose resets ({len(edge_cases)} cases) ---")
+    edge_times = []
+    for label, pose in edge_cases:
+        elapsed = timed_reset(env, forced_pose=pose)
+        edge_times.append(elapsed)
+        print(f"  {label}: reset took {elapsed:.2f}s, target={env.target_xyz}")
 
-    for sleep_after_unpause in [0.5, 1.0, 2.0]:
-        print(f"\n--- Testing pause-reset-unpause-enable, sleep={sleep_after_unpause}s ---")
+    n_random = 15
+    print(f"\n--- {n_random} random-sample resets (default ranges) ---")
+    random_times = []
+    for i in range(n_random):
+        elapsed = timed_reset(env)
+        random_times.append(elapsed)
+        print(f"  reset {i}: {elapsed:.2f}s, target={env.target_xyz}")
 
-        gz_control('pause: true')
-        gz_control('reset: {all: true}')
-        gz_control('pause: false')
-        
-        print(f"  sleeping {sleep_after_unpause}s...")
-        time.sleep(sleep_after_unpause)
+    all_times = edge_times + random_times
+    print(
+        f"\n--- Summary over {len(all_times)} randomized resets ---\n"
+        f"  min={min(all_times):.2f}s  mean={sum(all_times)/len(all_times):.2f}s  "
+        f"max={max(all_times):.2f}s"
+    )
+    print("(No timeout warnings above means _at_spawn_pose converged every time.)")
 
-        # Enable after unpause
-        start = time.time()
-        while time.time() - start < 2.0:
-            enable_pub.publish(enable_msg)
-            cmd_pub.publish(cmd)
-            executor.spin_once(timeout_sec=0.05)
+    env.close()
 
-        print("  waiting for odom...")
-        wait_for_odom(executor)
 
-    rclpy.shutdown(context=ctx)
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

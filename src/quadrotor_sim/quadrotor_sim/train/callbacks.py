@@ -8,7 +8,9 @@ import time
 from typing import Any
 
 import numpy as np
+from geometry_msgs.msg import Twist
 from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback
+from stable_baselines3.common.vec_env import VecNormalize
 
 
 def unwrap_env(env):
@@ -20,6 +22,30 @@ def unwrap_env(env):
     while hasattr(env, "env"):
         env = env.env
     return env
+
+
+def find_vec_normalize(env):
+    """Walk outward-in looking for a VecNormalize wrapper, or None if absent.
+
+    Needed because DeterministicEvalCallback drives the raw env directly
+    (bypassing the VecEnv wrapper stack, since a second Gazebo instance isn't
+    available for a separate eval env) — if VecNormalize is in use, its
+    running obs statistics must be applied manually before predict(), or the
+    policy sees inputs far outside the distribution it was trained on."""
+    while env is not None:
+        if isinstance(env, VecNormalize):
+            return env
+        env = getattr(env, "venv", None)
+    return None
+
+
+def _maybe_save_vecnormalize(model, save_path: str) -> None:
+    """Save VecNormalize running stats alongside a checkpoint, if in use —
+    whoever loads this checkpoint later needs matching stats to normalize
+    observations the same way the policy was trained on."""
+    vec_normalize = find_vec_normalize(model.get_env())
+    if vec_normalize is not None:
+        vec_normalize.save(save_path + "_vecnormalize.pkl")
 
 
 class _RolloutHookCallback(BaseCallback):
@@ -62,6 +88,7 @@ class SaveBestRolloutMeanCallback(_RolloutHookCallback):
             self.best_timesteps = timesteps
             os.makedirs(os.path.dirname(self.save_path) or ".", exist_ok=True)
             self.model.save(self.save_path)
+            _maybe_save_vecnormalize(self.model, self.save_path)
             _write_meta(
                 self.save_path + "_meta.json",
                 {
@@ -117,9 +144,21 @@ class DeterministicEvalCallback(_RolloutHookCallback):
         if self._rollout_count % self.eval_freq_rollouts != 0:
             return True
 
-        base_env = unwrap_env(self.model.get_env())
+        vec_env = self.model.get_env()
+        base_env = unwrap_env(vec_env)
+        vec_normalize = find_vec_normalize(vec_env)
         episode_rewards: list[float] = []
         episode_lengths: list[int] = []
+
+        def _policy_obs(raw_obs):
+            # base_env.reset()/.step() bypass VecNormalize entirely (no second
+            # Gazebo instance to run a wrapped eval env against), so replicate
+            # its observation normalization manually using the SAME running
+            # stats the policy was actually trained on. Reward stays raw/
+            # physical (ep_reward below) — that's what we want to report.
+            if vec_normalize is None:
+                return raw_obs
+            return vec_normalize.normalize_obs(raw_obs.reshape(1, -1)).reshape(-1).astype(np.float32)
 
         if self.verbose:
             print(
@@ -129,12 +168,14 @@ class DeterministicEvalCallback(_RolloutHookCallback):
 
         for ep in range(self.n_eval_episodes):
             obs, _ = base_env.reset()
+            obs = _policy_obs(obs)
             done = False
             ep_reward = 0.0
             ep_len = 0
             while not done:
                 action, _ = self.model.predict(obs, deterministic=self.deterministic)
                 obs, reward, terminated, truncated, _ = base_env.step(action)
+                obs = _policy_obs(obs)
                 ep_reward += float(reward)
                 ep_len += 1
                 done = terminated or truncated
@@ -171,6 +212,7 @@ class DeterministicEvalCallback(_RolloutHookCallback):
             self.best_timesteps = timesteps
             os.makedirs(os.path.dirname(self.save_path) or ".", exist_ok=True)
             self.model.save(self.save_path)
+            _maybe_save_vecnormalize(self.model, self.save_path)
             _write_meta(
                 self.save_path + "_meta.json",
                 {
@@ -252,12 +294,56 @@ class EarlyStopNoImprovementCallback(_RolloutHookCallback):
         return True
 
 
-def build_checkpoint_callback(checkpoint_dir: str, save_freq: int, verbose: int = 1):
+class PausePhysicsDuringUpdatesCallback(BaseCallback):
+    """Pause Gazebo physics while PPO runs its gradient updates.
+
+    Gazebo free-runs in (scaled) real time, so during the update phase the
+    drone keeps executing the last commanded velocity with nobody watching —
+    it drifts, and the next rollout resumes from wherever it ended up. With
+    real_time_factor uncapped (empty.sdf), seconds of wall-clock updates
+    become tens of sim-seconds of unsupervised drift, so this went from a
+    minor boundary artifact to worth fixing. Pausing also stops physics from
+    competing with the gradient computation for CPU.
+
+    MUST be placed AFTER DeterministicEvalCallback in the CallbackList:
+    callbacks run in list order, and the eval callback drives the env at
+    on_rollout_end — physics must still be running when it does.
+    """
+
+    def _on_step(self) -> bool:
+        return True
+
+    def _raw_env(self):
+        return unwrap_env(self.model.get_env())
+
+    def _on_rollout_end(self) -> None:
+        raw_env = self._raw_env()
+        # Zero the velocity command first: on unpause, _unpause_physics spins
+        # ~0.5s wall-clock before stepping resumes — at uncapped
+        # real_time_factor that's several SIM-seconds, and the PID would fly
+        # whatever command was left held. Zero velocity = hover in place.
+        raw_env._cmd_pub.publish(Twist())
+        raw_env._pause_physics()
+
+    def _on_rollout_start(self) -> None:
+        self._raw_env()._unpause_physics()
+
+    def _on_training_end(self) -> None:
+        # learn() exits right after the final update (physics still paused);
+        # train_hover.py runs its own post-training eval against the env, so
+        # leave the sim running.
+        self._raw_env()._unpause_physics()
+
+
+def build_checkpoint_callback(
+    checkpoint_dir: str, save_freq: int, save_vecnormalize: bool = False, verbose: int = 1
+):
     os.makedirs(checkpoint_dir, exist_ok=True)
     return CheckpointCallback(
         save_freq=save_freq,
         save_path=checkpoint_dir,
         name_prefix="quadrotor_hover",
+        save_vecnormalize=save_vecnormalize,
         verbose=verbose,
     )
 
