@@ -67,7 +67,7 @@ cd ~/ros2_ws
 python3 scripts/eval_hover.py --episodes 100 --success-threshold 0.15
 ```
 
-Default model is `checkpoints_goal_hold/best_eval` — the station-keeping policy the Results table above measures. `--episodes 100` gives a statistic that holds up; use fewer for a quick look. For the legacy fixed-point task: `--model quadrotor_hover_ppo --no-randomize`. Checkpoints aren't tracked in git (see `.gitignore`), so this needs a locally trained model — run the two phases under Train below to reproduce one.
+Default model is `checkpoints_goal_hold/best_eval` — the station-keeping policy the Results table above measures. `--episodes 100` gives a statistic that holds up; use fewer for a quick look. For the legacy fixed-point task: `--model quadrotor_hover_ppo --no-randomize`. Checkpoints aren't tracked in git (see `.gitignore`). Download `best_eval.zip` + `best_eval_vecnormalize.pkl` from the [v0.2.0 release](https://github.com/franciscodngferreira/ros2_quadrotor/releases/tag/v0.2.0) into `checkpoints_goal_hold/` to reproduce the numbers above without training — keep them side by side, since the `_vecnormalize.pkl` is auto-detected next to the model and a fresh `VecNormalize` would feed the policy differently-scaled observations than it learned on.
 
 Longer recording: `python3 scripts/eval_hover.py --max-steps 2000 --episodes 1`
 
